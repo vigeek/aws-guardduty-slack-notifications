@@ -27,4 +27,4 @@ Screen example: `screen -A -m -d -S aws-guardduty-notifications bash aws-guarddu
 Also included is a traditional init script that can start and stop the monitor, to use this script, place the init script in /etc/init.d and make exectuable.  Place the monitor script in /opt/aws-guardduty-notifications/aws-guardduty-notifications.sh and you're all set.
 
 ## Example alert
-![alt tag](https://github.com/vigeek/aws-elb-logs-to-logstash/blob/master/kibana-dashboard/guard-duty-alerts.png)
+![alt tag](https://github.com/vigeek/aws-elb-logs-to-logstash/blob/master/guard-duty-alerts.png)
