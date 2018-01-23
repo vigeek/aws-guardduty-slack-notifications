@@ -1,6 +1,9 @@
 # aws-guardduty-slack
 Consumes AWS (Amazon Web Services) Guard Duty events and sends alerts to Slack, Mattermost and other compatible chats.
 
+## Example alert
+![alt tag](https://github.com/vigeek/aws-guardduty-slack/blob/master/guard-duty-alerts.png)
+
 ## Requires
 AWS command line interface [found here](https://aws.amazon.com/cli/).
 
@@ -26,5 +29,3 @@ Screen example: `screen -A -m -d -S aws-guardduty-notifications bash aws-guarddu
 
 Also included is a traditional init script that can start and stop the monitor, to use this script, place the init script in /etc/init.d and make exectuable.  Place the monitor script in /opt/aws-guardduty-notifications/aws-guardduty-notifications.sh and you're all set.
 
-## Example alert
-![alt tag](https://github.com/vigeek/aws-guardduty-slack/blob/master/guard-duty-alerts.png)
