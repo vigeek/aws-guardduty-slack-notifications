@@ -18,3 +18,13 @@ Open `aws-guardduty-notifications.sh` in a text editor, towards the top edit the
 `CHECK_INTERVAL`: How often to check for new guard duty events, in seconds. [DEFAULT=60]
 
 `EVENT_STORAGE_FILE`: The file where we store existing events that have already had alerts sent
+
+## Executing
+Once configured, you can simply execute the script as a background process or via screen.
+
+Screen example: `screen -A -m -d -S aws-guardduty-notifications bash aws-guardduty-notifications.sh &` this will place it in a screen that has a label of `aws-guardduty-notifications`
+
+Also included is a traditional init script that can start and stop the monitor, to use this script, place the init script in /etc/init.d and make exectuable.  Place the monitor script in /opt/aws-guardduty-notifications/aws-guardduty-notifications.sh and you're all set.
+
+## Example alert
+![alt tag](https://github.com/vigeek/aws-elb-logs-to-logstash/blob/master/kibana-dashboard/guard-duty-alerts.png)
