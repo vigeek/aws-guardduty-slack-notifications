@@ -32,13 +32,13 @@ readonly DIRECTOR_ID="$(aws guardduty list-detectors | jq -r .DetectorIds[])"
 touch $EVENT_STORAGE_FILE
 
 function send_mm_alert(){
-  if [[ ! $EVENT_DATA == *"$IGNORE_INSTANCE"* ]] ; then
+  if [[ ! "$(echo $EVENT_DATA)" == *"$IGNORE_INSTANCE"* ]] ; then
     if [ $GD_SEVERITY -gt $MAJOR_ALERT_SEVERITY ] ; then
       curl -i -X POST -H 'Content-Type: application/json' -d '{"text": "** <!channel> '"$GD_MESSAGE"' **\n * Event: UID='$GD_EVENT_ID' | Time='$GD_EVENT_TIME' | Count='$GD_COUNT' | Severity='$GD_SEVERITY' | Source=GuardDuty"}' \
       $WEB_HOOK_URL
       logger -t INFO "$BASE_NAME [alert-notable]:  $GD_MESSAGE UID=$GD_EVENT_ID"
     else
-      curl -i -X POST -H 'Content-Type: application/json' -d '{"text": " Alert: '"$GD_MESSAGE"' **\n * Event: UID='$GD_EVENT_ID' | Time='$GD_EVENT_TIME' | Count='$GD_COUNT' | Severity='$GD_SEVERITY' | Source=GuardDuty"}' \
+      curl -i -X POST -H 'Content-Type: application/json' -d '{"text": "** Alert[low-severity]: '"$GD_MESSAGE"' **\n * Event: UID='$GD_EVENT_ID' | Time='$GD_EVENT_TIME' | Count='$GD_COUNT' | Severity='$GD_SEVERITY' | Source=GuardDuty"}' \
       $WEB_HOOK_URL
       logger -t INFO "$BASE_NAME [alert-basic]:  $GD_MESSAGE UID=$GD_EVENT_ID"
     fi      
