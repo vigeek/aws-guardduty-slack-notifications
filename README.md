@@ -14,6 +14,8 @@ Note: Both can typically be installed using linux package managers (e.g yum and 
 ## Configuration
 Open `aws-guardduty-notifications.sh` in a text editor, towards the top edit the setting `WEB_HOOK_URL` this is the **only required** configurable option.  Other changeable parameters exist but the defaults are acceptable, these optionals are listed below
 
+`INSTANCE_TAG`: if you tag your instances with extra information (i.e: instance name/label, environment, etc).  Set the tag name here to include in alert data.
+
 `IGNORE_INSTANCE`: you can define an instance to white list, avoids sending alerts involving this instance.
 
 `MAJOR_ALERT_SEVERITY`: Alerts above this guard duty severity make additional chat noise by pinging the entire channel. [DEFAULT=5]

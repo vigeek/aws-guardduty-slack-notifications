@@ -10,7 +10,7 @@ WEB_HOOK_URL="https://something-slack.com/hooks/jtbos8akj7ndjb83wutnrradih"
 
 # When sending an alert, a single tag (such as instance name) can be included, place the tag name here.
 # If the tag doesn't exist on an instance, it will be replaced with 'null'
-INSTANCE_NAME_TAG="MyTag"
+INSTANCE_TAG="MyTag"
 
 ### Optional settings (defaults are acceptable)
 
@@ -38,11 +38,11 @@ touch $EVENT_STORAGE_FILE
 function send_mm_alert(){
   if [[ ! "$(echo $EVENT_DATA)" == *"$IGNORE_INSTANCE"* ]] ; then
     if [ $GD_SEVERITY -gt $MAJOR_ALERT_SEVERITY ] ; then
-      curl -i -X POST -H 'Content-Type: application/json' -d '{"text": "** <!channel> '"$GD_MESSAGE"' ** [`'"$GD_INSTANCE_NAME"'`]\n * Event: UID='$GD_EVENT_ID' | Time='$GD_EVENT_TIME' | Count='$GD_COUNT' | Severity='$GD_SEVERITY' | Source=GuardDuty"}' \
+      curl -i -X POST -H 'Content-Type: application/json' -d '{"text": "** <!channel> '"$GD_MESSAGE"' ** [`'"$GD_INSTANCE_TAG"'`]\n * Event: UID='$GD_EVENT_ID' | Time='$GD_EVENT_TIME' | Count='$GD_COUNT' | Severity='$GD_SEVERITY' | Source=GuardDuty"}' \
       $WEB_HOOK_URL
       logger -t INFO "$BASE_NAME [alert-notable]:  $GD_MESSAGE UID=$GD_EVENT_ID"
     else
-      curl -i -X POST -H 'Content-Type: application/json' -d '{"text": "** Alert: '"$GD_MESSAGE"' ** [`'"$GD_INSTANCE_NAME"'`]\n * Event: UID='$GD_EVENT_ID' | Time='$GD_EVENT_TIME' | Count='$GD_COUNT' | Severity='$GD_SEVERITY' | Source=GuardDuty"}' \
+      curl -i -X POST -H 'Content-Type: application/json' -d '{"text": "** Alert: '"$GD_MESSAGE"' ** [`'"$GD_INSTANCE_TAG"'`]\n * Event: UID='$GD_EVENT_ID' | Time='$GD_EVENT_TIME' | Count='$GD_COUNT' | Severity='$GD_SEVERITY' | Source=GuardDuty"}' \
       $WEB_HOOK_URL
       logger -t INFO "$BASE_NAME [alert-basic]:  $GD_MESSAGE UID=$GD_EVENT_ID"
     fi      
@@ -60,10 +60,7 @@ function parse_event_data(){
   GD_SEVERITY="$(echo $EVENT_DATA | jq -r .Findings[].Severity)"
   GD_EVENT_TIME="$(echo $EVENT_DATA | jq -r .Findings[].Service.EventFirstSeen?)"
   GD_EVENT_ID="$(echo $EVENT_DATA | jq -r .Findings[].Id)"
-  GD_INSTANCE_NAME="$(echo $EVENT_DATA | jq -r '.Findings[].Resource[].Tags? | map(select(.Key == '\"$INSTANCE_NAME_TAG\"')) | .[].Value')"
-  if [ -z "$GD_INSTANCE_NAME" ] ; then 
-    GD_INSTANCE_NAME="null"
-  fi
+  GD_INSTANCE_TAG="$(echo $EVENT_DATA | jq -r '.Findings[].Resource[].Tags? | map(select(.Key == '\"$INSTANCE_TAG\"')) | .[].Value')"
 }
 
 # Loop through the current findings
