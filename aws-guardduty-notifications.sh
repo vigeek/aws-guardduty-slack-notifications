@@ -28,6 +28,10 @@ CHECK_INTERVAL="60"
 # You can set this to an instance ID, security group, etc.  Leave default setting to disable
 IGNORE_INSTANCE="i-123456789abc"
 
+# In AWS GuardDuty, it's possible to archive events for a period of time.  When the archival expires, those events resurface.
+# By setting this to "1" we only send events that match todays date (UTC).  Setting to '0' sends all events regardless of age.
+IGNORE_OLD_EVENTS="1"
+
 ### No need to edit anything below this line.
 
 readonly BASE_NAME=$(basename -- "$0")
@@ -35,6 +39,7 @@ readonly DIRECTOR_ID="$(aws guardduty list-detectors | jq -r .DetectorIds[])"
 
 touch $EVENT_STORAGE_FILE
 
+# FUNCTION (send_mm_alert):  Send an alert to Slack, Mattermost etc using the data we obtained earlier
 function send_mm_alert(){
   if [[ ! "$(echo $EVENT_DATA)" == *"$IGNORE_INSTANCE"* ]] ; then
     if [ $GD_SEVERITY -gt $MAJOR_ALERT_SEVERITY ] ; then
@@ -54,6 +59,7 @@ function send_mm_alert(){
   echo $gd_events >> $EVENT_STORAGE_FILE
 }
 
+# FUNCTION (parse_event_data):  Parse the event JSON data with the jq utility, place useful data into variables.
 function parse_event_data(){
   GD_MESSAGE="$(echo $EVENT_DATA | jq -r .Findings[].Title)"
   GD_COUNT="$(echo $EVENT_DATA | jq -r .Findings[].Service.Count?)"
@@ -63,15 +69,33 @@ function parse_event_data(){
   GD_INSTANCE_TAG="$(echo $EVENT_DATA | jq -r '.Findings[].Resource[].Tags? | map(select(.Key == '\"$INSTANCE_TAG\"')) | .[].Value')"
 }
 
+# FUNCTION (check_event_date):  Check the date of the event and call alert function (or not, conditional)
+function check_event_date(){
+  if [ "$IGNORE_OLD_EVENTS" == "1" ] ; then
+    if [[ "$GD_EVENT_TIME" == *"$(date +%Y-%m-%d)"* ]] ; then
+      send_mm_alert
+    else
+      # It's an old event thats archival expired.
+      EVENT_DATA=""
+      echo $gd_events >> $EVENT_STORAGE_FILE
+    fi
+  else
+    send_mm_alert
+  fi
+}
+
 # Loop through the current findings
 while true ; do
   for gd_events in `aws guardduty list-findings --detector-id $DIRECTOR_ID | jq -r .FindingIds[]` ; do
     # Check our events file to see if this is a new event or old.
     if ! grep $gd_events $EVENT_STORAGE_FILE ; then
       EVENT_DATA="$(aws guardduty get-findings --detector-id $DIRECTOR_ID --finding-ids $gd_events)"
-      parse_event_data
-      send_mm_alert
+      # Parse the data of any events discovered
+      parse_event_data 
+      # Check the date of the event and then call alert to be sent (or not)
+      check_event_date
     fi
   done
   sleep $CHECK_INTERVAL
 done
+
