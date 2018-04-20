@@ -38,11 +38,11 @@ touch $EVENT_STORAGE_FILE
 function send_mm_alert(){
   if [[ ! "$(echo $EVENT_DATA)" == *"$IGNORE_INSTANCE"* ]] ; then
     if [ $GD_SEVERITY -gt $MAJOR_ALERT_SEVERITY ] ; then
-      curl -i -X POST -H 'Content-Type: application/json' -d '{"text": "** <!channel> '"$GD_MESSAGE"' ** [`'"$GD_INSTANCE_TAG"'`]\n * Event: UID='$GD_EVENT_ID' | Time='$GD_EVENT_TIME' | Count='$GD_COUNT' | Severity='$GD_SEVERITY' | Source=GuardDuty"}' \
+      curl -s -i -X POST -H 'Content-Type: application/json' -d '{"text": "** <!channel> '"$GD_MESSAGE"' ** [`'"$GD_INSTANCE_TAG"'`]\n * Event: UID='$GD_EVENT_ID' | Time='$GD_EVENT_TIME' | Count='$GD_COUNT' | Severity='$GD_SEVERITY' | Source=GuardDuty"}' \
       $WEB_HOOK_URL
       logger -t INFO "$BASE_NAME [alert-notable]:  $GD_MESSAGE UID=$GD_EVENT_ID"
     else
-      curl -i -X POST -H 'Content-Type: application/json' -d '{"text": "** Alert: '"$GD_MESSAGE"' ** [`'"$GD_INSTANCE_TAG"'`]\n * Event: UID='$GD_EVENT_ID' | Time='$GD_EVENT_TIME' | Count='$GD_COUNT' | Severity='$GD_SEVERITY' | Source=GuardDuty"}' \
+      curl -s -i -X POST -H 'Content-Type: application/json' -d '{"text": "** Alert: '"$GD_MESSAGE"' ** [`'"$GD_INSTANCE_TAG"'`]\n * Event: UID='$GD_EVENT_ID' | Time='$GD_EVENT_TIME' | Count='$GD_COUNT' | Severity='$GD_SEVERITY' | Source=GuardDuty"}' \
       $WEB_HOOK_URL
       logger -t INFO "$BASE_NAME [alert-basic]:  $GD_MESSAGE UID=$GD_EVENT_ID"
     fi      
